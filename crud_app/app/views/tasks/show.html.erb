@@ -1,0 +1,12 @@
+<h1><%= @task.title %></h1>
+
+<p>
+  <strong>Description:</strong><br>
+  <%= @task.description %>
+</p>
+
+<div class="actions">
+  <%= link_to "Edit", edit_task_path(@task), class: "btn btn-warning" %>
+  <%= link_to "Delete", task_path(@task), method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-danger" %>
+  <%= link_to "Back to Tasks", tasks_path, class: "btn btn-secondary" %>
+</div>
