@@ -2,14 +2,11 @@ require 'rails_helper'
 require 'http'
 
 describe 'Actors API' do
-  # Base URL for your API
   BASE_URL = 'http://localhost:3001/api/v1'
 
   before(:each) do
-    # Reset database before each test
     Actor.delete_all
     
-    # Create fresh test data
     test_data = [
       { name: 'Tom Holland', country: 'United Kingdom' },
       { name: 'Robert Downey Jr.', country: 'United States' },
@@ -21,7 +18,7 @@ describe 'Actors API' do
     test_data.each { |data| Actor.create!(data) }
   end
 
-  describe 'GET /api/v1/actors', :tc_actors do
+  describe 'GET /api/v1/actors' do
       it 'tc_get_actors_01 returns a 200 status code', :tc_get_actors_01, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors")
         expect(response.status).to eq(200)
@@ -46,7 +43,7 @@ describe 'Actors API' do
       end
   end
 
-  describe 'GET /api/v1/actors/:id', :tc_actors do
+  describe 'GET /api/v1/actors/:id' do
       it 'tc_get_actors_id_01 returns a 200 status code', :tc_get_actors_id_01, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors/#{Actor.all[0].id}")
         expect(response.status).to eq(200)
@@ -63,7 +60,7 @@ describe 'Actors API' do
       end
   end
 
-  describe 'POST /api/v1/actors', :tc_actors do
+  describe 'POST /api/v1/actors' do
       it 'tc_post_actors_01 returns a 201 status code', :tc_post_actors_01, :tc_actors do
         response = HTTP.post("#{BASE_URL}/actors", json: {
           actor: {
@@ -89,7 +86,7 @@ describe 'Actors API' do
       end
   end
 
-  describe 'PATCH /api/v1/actors/:id', :tc_actors do
+  describe 'PATCH /api/v1/actors/:id' do
     it 'tc_patch_actors_id_01 returns a 200 status code', :tc_patch_actors_id_01, :tc_actors do
         response = HTTP.patch("#{BASE_URL}/actors/#{Actor.all[0].id}", json: {
           actor: {
@@ -112,7 +109,7 @@ describe 'Actors API' do
       end
   end
 
-  describe 'DELETE /api/v1/actors/:id', :tc_actors do
+  describe 'DELETE /api/v1/actors/:id' do
        it 'tc_delete_actors_id_01 returns a 204 status code', :tc_delete_actors_id_01, :tc_actors do
         response = HTTP.delete("#{BASE_URL}/actors/#{Actor.all[2].id}")
         expect(response.status).to eq(204)
