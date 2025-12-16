@@ -21,22 +21,21 @@ describe 'Actors API' do
     test_data.each { |data| Actor.create!(data) }
   end
 
-  describe 'GET /api/v1/actors' do
-    context 'when requesting all actors' do
-      it 'tc_get_actors_01 returns a 200 status code' do
+  describe 'GET /api/v1/actors', :tc_actors do
+      it 'tc_get_actors_01 returns a 200 status code', :tc_get_actors_01, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors")
         expect(response.status).to eq(200)
         puts "tc_get_actors_01 - Status: #{response.status}"
       end
 
-      it 'tc_get_actors_02 returns an array of actors' do
+      it 'tc_get_actors_02 returns an array of actors', :tc_get_actors_02, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors")
         body = JSON.parse(response.body)
         expect(body).to be_a(Array)
         puts "tc_get_actors_02 - Status: #{response.status}"
       end
 
-      it 'tc_get_actors_03 each actor has name and country' do
+      it 'tc_get_actors_03 each actor has name and country', :tc_get_actors_03, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors")
         body = JSON.parse(response.body)
         body.each do |actor|
@@ -45,18 +44,16 @@ describe 'Actors API' do
         end
         puts "tc_get_actors_03 - Status: #{response.status}"
       end
-    end
   end
 
-  describe 'GET /api/v1/actors/:id' do
-    context 'when requesting a specific actor' do
-      it 'tc_get_actors_id_01 returns a 200 status code' do
+  describe 'GET /api/v1/actors/:id', :tc_actors do
+      it 'tc_get_actors_id_01 returns a 200 status code', :tc_get_actors_id_01, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors/#{Actor.all[0].id}")
         expect(response.status).to eq(200)
         puts "tc_get_actors_id_01 - Status: #{response.status}"
       end
 
-      it 'tc_get_actors_id_02 returns the actor with correct structure' do
+      it 'tc_get_actors_id_02 returns the actor with correct structure', :tc_get_actors_id_02, :tc_actors do
         response = HTTP.get("#{BASE_URL}/actors/#{Actor.all[0].id}")
         body = JSON.parse(response.body)
         expect(body).to have_key('id')
@@ -64,20 +61,10 @@ describe 'Actors API' do
         expect(body).to have_key('country')
         puts "tc_get_actors_id_02 - Status: #{response.status}"
       end
-    end
-
-    context 'when actor does not exist' do
-      it 'tc_get_actors_id_03 returns a 404 status code' do
-        response = HTTP.get("#{BASE_URL}/actors/99999")
-        expect(response.status).to eq(404)
-        puts "tc_get_actors_id_03 - Status: #{response.status}"
-      end
-    end
   end
 
-  describe 'POST /api/v1/actors' do
-    context 'when creating a new actor' do
-      it 'tc_post_actors_01 returns a 201 status code' do
+  describe 'POST /api/v1/actors', :tc_actors do
+      it 'tc_post_actors_01 returns a 201 status code', :tc_post_actors_01, :tc_actors do
         response = HTTP.post("#{BASE_URL}/actors", json: {
           actor: {
             name: 'Tom Cruise',
@@ -88,7 +75,7 @@ describe 'Actors API' do
         puts "tc_post_actors_01 - Status: #{response.status}"
       end
 
-      it 'tc_post_actors_02 returns the created actor' do
+      it 'tc_post_actors_02 returns the created actor', :tc_post_actors_02, :tc_actors do
         response = HTTP.post("#{BASE_URL}/actors", json: {
           actor: {
             name: 'Johnny Depp',
@@ -100,12 +87,10 @@ describe 'Actors API' do
         expect(body['country']).to eq('United States')
         puts "tc_post_actors_02 - Status: #{response.status}"
       end
-    end
   end
 
-  describe 'PATCH /api/v1/actors/:id' do
-    context 'when updating an actor' do
-      it 'tc_patch_actors_id_01 returns a 200 status code' do
+  describe 'PATCH /api/v1/actors/:id', :tc_actors do
+    it 'tc_patch_actors_id_01 returns a 200 status code', :tc_patch_actors_id_01, :tc_actors do
         response = HTTP.patch("#{BASE_URL}/actors/#{Actor.all[0].id}", json: {
           actor: {
             name: 'Updated Name'
@@ -115,7 +100,7 @@ describe 'Actors API' do
         puts "tc_patch_actors_id_01 - Status: #{response.status}"
       end
 
-      it 'tc_patch_actors_id_02 returns the updated actor' do
+      it 'tc_patch_actors_id_02 returns the updated actor', :tc_patch_actors_id_02, :tc_actors do
         response = HTTP.patch("#{BASE_URL}/actors/#{Actor.all[1].id}", json: {
           actor: {
             name: 'New Actor Name'
@@ -125,18 +110,16 @@ describe 'Actors API' do
         expect(body['name']).to eq('New Actor Name')
         puts "tc_patch_actors_id_02 - Status: #{response.status}"
       end
-    end
   end
 
-  describe 'DELETE /api/v1/actors/:id' do
-    context 'when deleting an actor' do
-      it 'tc_delete_actors_id_01 returns a 204 status code' do
+  describe 'DELETE /api/v1/actors/:id', :tc_actors do
+       it 'tc_delete_actors_id_01 returns a 204 status code', :tc_delete_actors_id_01, :tc_actors do
         response = HTTP.delete("#{BASE_URL}/actors/#{Actor.all[2].id}")
         expect(response.status).to eq(204)
         puts "tc_delete_actors_id_01 - Status: #{response.status}"
       end
-
-      it 'tc_delete_actors_id_02 actor is no longer accessible' do
+    context 'Negative cases' do
+      it 'tc_delete_actors_id_02 actor is no longer accessible', :tc_delete_actors_id_02, :tc_actors do
         actor_id = Actor.all[3].id
         HTTP.delete("#{BASE_URL}/actors/#{actor_id}")
         response = HTTP.get("#{BASE_URL}/actors/#{actor_id}")

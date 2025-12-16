@@ -112,11 +112,43 @@ The test suite uses RSpec with the HTTP gem to make real HTTP requests to the ru
 
 2. Ensure PostgreSQL is running
 
-### Running the Test Suite
+### Using Rake Tasks (Recommended for Teams)
 
-In another terminal, run:
+For easy cross-IDE compatibility, use Rake tasks to run tests:
+
+**Run all tests:**
 ```bash
+rake spec:tc_actors
+```
+
+**Run a specific test by tag:**
+```bash
+rake 'spec:tc_actor[tc_get_actors_01]'
+rake 'spec:tc_actor[tc_post_actors_02]'
+rake 'spec:tc_actor[tc_delete_actors_id_01]'
+```
+
+Each test has a unique tag (e.g., `tc_get_actors_01`, `tc_post_actors_02`) that corresponds to the test name. These tags allow selective test execution without IDE dependencies.
+
+**Why Rake tasks?**
+- Works across all IDEs (VS Code, RubyMine, Vim, etc.)
+- No IDE configuration needed
+- Team members just clone and run commands
+- Standard Rails convention
+
+### Direct RSpec Commands
+
+You can also run RSpec directly:
+
+```bash
+# Run all tests
 RAILS_ENV=development rspec ./spec/api_testing/api_testing_rspec.rb
+
+# Run tests with a specific tag
+RAILS_ENV=development rspec ./spec/api_testing/api_testing_rspec.rb -t tc_get_actors_01
+
+# Run all tests with the main tag
+RAILS_ENV=development rspec ./spec/api_testing/api_testing_rspec.rb -t tc_actors
 ```
 
 The `RAILS_ENV=development` flag is critical—it ensures tests use the **development database** (same as the running server) instead of the isolated test database. This allows tests to validate real HTTP interactions with persistent data.
@@ -131,7 +163,7 @@ tc_post_actors_01 - Status: 201 Created
 tc_delete_actors_id_01 - Status: 204 No Content
 ...
 Finished in 0.28 seconds
-12 examples, 0 failures
+11 examples, 0 failures
 ```
 
 ## Test Structure
@@ -195,28 +227,49 @@ Traditional isolated test databases miss real-world issues:
 
 This approach trades isolation for **realistic scenarios** that match production behavior.
 
-## Development Workflow
+## Debugging Tests
 
-### Option 1: Manual Testing + Automated Tests
-1. Run server: `rails s -p 3001`
-2. Run tests: `RAILS_ENV=development rspec ...`
-3. Tests create fresh actors, exercise all endpoints, verify responses
-4. Server remains running—inspect database state in `rails console` if needed
+### Using Pry Debugger
 
-### Option 2: Testing via Console
-```bash
-rails console
-irb> Actor.all
-irb> Actor.create!(name: 'New Actor', country: 'Country')
-irb> Actor.find(1).update!(name: 'Updated Name')
+Add `binding.pry` to pause execution and inspect variables:
+
+```ruby
+it 'tc_get_actors_02 returns an array of actors', :tc_get_actors_02, :tc_actors do
+  response = HTTP.get("#{BASE_URL}/actors")
+  body = JSON.parse(response.body)
+  binding.pry  # Debugger pauses here
+  expect(body).to be_a(Array)
+end
 ```
 
-## Deployment Notes
+**Run test with debugging:**
+```bash
+rake 'spec:tc_actor[tc_get_actors_02]'
+```
 
-- Ensure PostgreSQL is configured and running
-- Set appropriate environment variables for production (database credentials, etc.)
-- Consider using connection pooling for higher concurrency
-- Database migrations should be run before deployment: `rails db:migrate`
+When the test hits `binding.pry`, you'll enter the pry console. Inspect variables:
+
+```
+[1] pry(main)> body
+=> [{"id"=>794, "name"=>"Tom Holland", ...}, ...]
+
+[2] pry(main)> response.status
+=> 200
+
+[3] pry(main)> body.first
+=> {"id"=>794, "name"=>"Tom Holland", "country"=>"United Kingdom", ...}
+
+[4] pry(main)> continue  # Resume test execution
+```
+
+**Available debugger commands:**
+- `step` - Step into code
+- `next` - Next line
+- `continue` - Resume execution
+- `q` - Quit pager view (if output is long)
+- `exit` - Exit debugger
+
+The debugger works seamlessly with Rake tasks, allowing interactive inspection of test data and responses.
 
 ## Gems Used
 
@@ -225,4 +278,4 @@ irb> Actor.find(1).update!(name: 'Updated Name')
 - `rack-cors`: CORS support for frontend requests
 - `http`: HTTP client for testing
 - `rspec`: Testing framework
-- `pry`, `byebug`: Debugging tools
+- `pry-rails`, `pry-byebug`: Debugging tools for RSpec tests
